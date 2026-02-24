@@ -105,9 +105,17 @@ has_scholarship: "",
   // Helper: validate a single field and return error message (or empty string)
   const validateField = (name, value) => {
     // Name fields: only alphabets and spaces allowed
-    if (name === "first_name" || name === "last_name" || name === "middle_name") {
+    if (name === "first_name" || name === "last_name") {
       if (!value) return `${name.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} is required`;
       if (!/^[a-zA-Z\s]+$/.test(value)) {
+        return "Only alphabets and spaces are allowed";
+      }
+      return "";
+    }
+
+    // Middle name: optional, but if present only alphabets and spaces allowed
+    if (name === "middle_name") {
+      if (value && !/^[a-zA-Z\s]+$/.test(value)) {
         return "Only alphabets and spaces are allowed";
       }
       return "";
@@ -1003,7 +1011,7 @@ has_scholarship: "",
               {errors.first_name && <p className="error-text">{errors.first_name}</p>}
             </label>
             <label>
-              Middle Name
+              <span className="field-label">Middle Name</span>
               <input
                 type="text"
                 name="middle_name"
@@ -1029,7 +1037,7 @@ has_scholarship: "",
 
           <div className="form-group">
             <label>
-              Date of Birth
+              <span className="field-label">Date of Birth</span>
               <input
                 type="date"
                 name="dob"
@@ -1050,7 +1058,7 @@ has_scholarship: "",
               <input type="text" name="camp_name" value={formData.camp_name} onChange={handleInputChange} />
             </label>
             <label>
-              Date of Camp<span className="required">*</span>
+              <span className="field-label">Date of Camp<span className="required">*</span></span>
               <input type="date" name="camp_date" value={formData.camp_date} onChange={handleInputChange} required />
             </label>
             <label>
@@ -1087,7 +1095,7 @@ has_scholarship: "",
               {errors.whatsapp && <p className="error-text">{errors.whatsapp}</p>}
             </label>
             <label>
-              Student's Contact Number
+              <span className="field-label">Student's Contact Number</span>
               <input
                 type="text"
                 name="student_contact"
@@ -1114,7 +1122,9 @@ has_scholarship: "",
 
           {/* --- Single Parent Question --- */}
           <div className="form-group">
-            <label>Is she currently being raised by a single parent or guardian?<span className="required">*</span></label>
+            <label>
+              <span className="field-label">Is she currently being raised by a single parent or guardian?<span className="required">*</span></span>
+            </label>
 
             <div className="radio-inline">
               <label>
@@ -1250,7 +1260,9 @@ has_scholarship: "",
 
         {/* --- Does she work to support her family? --- */}
         <div className="form-group">
-          <label>Does she work to support her family?<span className="required">*</span></label>
+          <label>
+            <span className="field-label">Does she work to support her family?<span className="required">*</span></span>
+          </label>
 
           <div className="radio-inline">
             <label>
@@ -1279,7 +1291,7 @@ has_scholarship: "",
 
           {formData.does_work === "YES" && (
             <label className="full-width">
-              What kind of job does she do?<span className="required">*</span>
+              <span className="field-label">What kind of job does she do?<span className="required">*</span></span>
               <input
                 type="text"
                 name="job"
@@ -1294,7 +1306,7 @@ has_scholarship: "",
         {/* --- Career Aspiration --- */}
         <div className="form-group">
           <label className="full-width">
-            What are her career aspirations and planned courses for the next two years?
+            <span className="field-label">What are her career aspirations and planned courses for the next two years?</span>
             <input
               type="text"
               name="aspiration"
@@ -1306,7 +1318,9 @@ has_scholarship: "",
 
         {/* --- Scholarship Question --- */}
         <div className="form-group">
-          <label>Is she getting any scholarship / Govt help / financial assistance?<span className="required">*</span></label>
+          <label>
+            <span className="field-label">Is she getting any scholarship / Govt help / financial assistance?<span className="required">*</span></span>
+          </label>
 
           <div className="radio-inline">
             <label>
@@ -1335,7 +1349,7 @@ has_scholarship: "",
 
           {formData.has_scholarship === "YES" && (
             <label className="full-width">
-              Scholarship / Assistance Details<span className="required">*</span>
+              <span className="field-label">Scholarship / Assistance Details<span className="required">*</span></span>
               <input
                 type="text"
                 name="scholarship"
