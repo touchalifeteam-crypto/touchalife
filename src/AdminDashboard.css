@@ -1,19 +1,10 @@
 .admin-root{
   display: flex;
+  align-items: stretch; /* ADD THIS LINE */
   min-height: 100vh;
   width: 100%;
   font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial;
   background: #F6F7F6;
-
-  /* 🔥 REMOVE THESE */
-  /* position: fixed; */
-  /* top: 0; */
-  /* left: 0; */
-  /* right: 0; */
-  /* bottom: 0; */
-  /* overflow: hidden; */
-
-  /* ✅ ADD THIS */
   position: relative;
   overflow-x: hidden;
 }
@@ -88,19 +79,22 @@
 }
 
 .admin-main{
-  margin-left: 260px;
   flex: 1;
   display: flex;
   flex-direction: column;
-
-  /* 🔥 CHANGE THESE */
-  min-height: 100vh;  /* instead of height:100vh */
+  min-height: 100vh;
   width: 100%;
   max-width: 100%;
+
+  /* 🔥 FIX: remove manual push */
+  margin-left: 0;
 
   position: relative;
   overflow-y: auto;
 }
+
+
+
 
 .admin-header{
   display: flex;
@@ -924,4 +918,13 @@ input[type="checkbox"]:checked::after {
   color: #FFFFFF;
   font-size: 12px;
   font-weight: bold;
+}
+/* 🔥 Fix logout button stretching on phones ONLY */
+@media (max-width: 900px) {
+  .logout-btn {
+    width: auto !important;      /* stop full stretch */
+    max-width: 180px;            /* keep professional size */
+    align-self: flex-start;      /* prevent flex stretching */
+    flex: 0 0 auto;              /* don't grow inside flex row */
+  }
 }
