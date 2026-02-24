@@ -829,32 +829,30 @@
 
 /* responsive */
 /* 📱 Tablet & Mobile Fix */
+/* 📱 Proper Mobile & Tablet Fix (DO NOT STACK SIDEBAR) */
 @media (max-width: 900px) {
   .admin-root {
-    flex-direction: column;
+    flex-direction: row; /* keep sidebar + content side by side */
   }
 
   .admin-sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 12px;
+    width: 220px;        /* slightly smaller on phone */
+    min-width: 220px;
+    flex-direction: column; /* keep vertical menu */
+    overflow: visible;
+    padding: 20px 14px;
   }
 
   .admin-main {
-    margin-left: 0;
     width: 100%;
-    min-height: auto;
+    min-height: 100vh;
   }
 
   .header-actions input {
-    min-width: 100px;
+    min-width: 120px;
     width: 100%;
   }
 }
-
 /* 📱 Mobile phones */
 @media (max-width: 600px) {
   .admin-header {
