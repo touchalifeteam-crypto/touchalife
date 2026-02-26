@@ -1,3 +1,8 @@
+html {
+  box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
+}
 .admin-root{
   display: flex;
   align-items: stretch; /* ADD THIS LINE */
@@ -79,16 +84,12 @@
 }
 
 .admin-main{
-  flex: 1;
+  flex: 1 1 0%;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  width: 100%;
-  max-width: 100%;
-
-  /* 🔥 FIX: remove manual push */
+  width: 0; /* 🔥 THIS FIXES THE BIG GAP ISSUE */
   margin-left: 0;
-
   position: relative;
   overflow-y: auto;
 }
@@ -829,31 +830,7 @@
 
 /* responsive */
 /* 📱 Tablet & Mobile Fix */
-@media (max-width: 900px) {
-  .admin-root {
-    flex-direction: column;
-  }
 
-  .admin-sidebar {
-    position: relative;
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    overflow-x: auto;
-    padding: 12px;
-  }
-
-  .admin-main {
-    margin-left: 0;
-    width: 100%;
-    min-height: auto;
-  }
-
-  .header-actions input {
-    min-width: 100px;
-    width: 100%;
-  }
-}
 
 /* 📱 Mobile phones */
 @media (max-width: 600px) {
@@ -926,5 +903,87 @@ input[type="checkbox"]:checked::after {
     max-width: 180px;            /* keep professional size */
     align-self: flex-start;      /* prevent flex stretching */
     flex: 0 0 auto;              /* don't grow inside flex row */
+  }
+}
+/* ================= PROFESSIONAL MOBILE SIDEBAR (NO COLOR CHANGE) ================= */
+
+/* Header left section (for menu + title) */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Hamburger button */
+.menu-toggle {
+  display: none;
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #2E2E2E;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s ease;
+}
+
+.menu-toggle:hover {
+  background: rgba(0,0,0,0.05);
+}
+
+/* Overlay when sidebar opens */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.35);
+  z-index: 999;
+}
+
+/* ===== TABLET & MOBILE (Professional behavior) ===== */
+@media (max-width: 1024px) {
+
+  /* Show hamburger button */
+  .menu-toggle {
+    display: block;
+  }
+
+  /* Sidebar becomes sliding drawer */
+  .admin-sidebar {
+    position: fixed !important;
+    top: 0;
+    left: -260px; /* hidden by default */
+    width: 260px;
+    height: 100vh;
+    z-index: 1000;
+    transition: left 0.3s ease;
+    flex-direction: column; /* keep vertical menu */
+  }
+
+  /* When sidebar is open */
+  .admin-sidebar.open {
+    left: 0;
+  }
+
+  /* Main content full width */
+  .admin-main {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+/* ===== SMALL MOBILE POLISH ===== */
+@media (max-width: 600px) {
+  .admin-header {
+    padding: 14px 18px;
+    flex-direction: row; /* keep header clean */
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .admin-content {
+    padding: 18px;
   }
 }

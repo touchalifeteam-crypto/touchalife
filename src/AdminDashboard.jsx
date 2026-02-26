@@ -140,6 +140,7 @@ fetchNonEligibleCount();
   const [query, setQuery] = useState("");
 
   const [activeSection, setActiveSection] = useState("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [viewStudent, setViewStudent] = useState(null);
   const [editStudent, setEditStudent] = useState(null);
   const [broadcastOpen, setBroadcastOpen] = useState(false);
@@ -504,7 +505,7 @@ const handleNotApprove = async (id) => {
 
   return (
     <div className="admin-root">
-      <aside className="admin-sidebar">
+     <aside className={`admin-sidebar ${sidebarOpen ? "open" : ""}`}>
         <div className="sidebar-top">
           <div className="brand">Touch A Life - Admin</div>
           <nav>
@@ -521,10 +522,40 @@ const handleNotApprove = async (id) => {
         </div>
         <button className="logout-btn" onClick={handleLogout}>Logout</button>
       </aside>
+      {sidebarOpen && (
+  <div
+    className="sidebar-overlay"
+    onClick={() => setSidebarOpen(false)}
+  />
+)}
 
       <div className="admin-main">
         <header className="admin-header">
-          <h2>{activeSection === "overview" ? "Dashboard Overview" : activeSection === "manage" ? "Manage Beneficiaries" : activeSection === "mapping" ? "Donor Mapping (Under Construction)" : activeSection === "fees" ? "Fee Tracking (Under Construction)" : activeSection === "broadcast" ? "Alerts & Broadcast (Under Construction)" : activeSection === "reports" ? "Reports & Exports" : "Settings"}</h2>
+  <div className="header-left">
+    <button 
+      className="menu-toggle"
+      onClick={() => setSidebarOpen(!sidebarOpen)}
+    >
+      ☰
+    </button>
+
+    <h2>
+      {activeSection === "overview" 
+        ? "Dashboard Overview" 
+        : activeSection === "manage" 
+        ? "Manage Beneficiaries" 
+        : activeSection === "mapping" 
+        ? "Donor Mapping (Under Construction)" 
+        : activeSection === "fees" 
+        ? "Fee Tracking (Under Construction)" 
+        : activeSection === "broadcast" 
+        ? "Alerts & Broadcast (Under Construction)" 
+        : activeSection === "reports" 
+        ? "Reports & Exports" 
+        : "Settings"}
+    </h2>
+  </div>
+        
           <div className="header-actions">
             <input placeholder="Search students or college..." value={query} onChange={(e) => setQuery(e.target.value)} />
             <button className="btn primary" onClick={() => setBroadcastOpen(true)}>New Broadcast</button>
