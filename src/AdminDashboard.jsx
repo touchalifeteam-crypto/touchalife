@@ -2342,6 +2342,18 @@ const fetchStudents = async () => {
 
 
 
+  const parseOptionalFloat = (value) => {
+    if (value === undefined || value === null || value === '') return null;
+    const parsed = parseFloat(value);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+
+  const parseOptionalInt = (value) => {
+    if (value === undefined || value === null || value === '') return null;
+    const parsed = parseInt(value, 10);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+
   const handleEditSave = async (data) => {
     const patchData = {
       full_name: data.name,
@@ -2355,12 +2367,12 @@ const fetchStudents = async () => {
       class: data.year,
       camp_name: data.campName,
       camp_date: data.campDate,
-      prev_percent: data.prev_percent,
-      present_percent: data.present_percent,
+      prev_percent: parseOptionalFloat(data.prev_percent),
+      present_percent: parseOptionalFloat(data.present_percent),
       has_scholarship: data.has_scholarship === 'Yes' || data.has_scholarship === 'YES' || data.has_scholarship === true,
       scholarship: data.scholarship,
       does_work: data.does_work === 'Yes' || data.does_work === 'YES' || data.does_work === true,
-      earning_members: data.earning_members,
+      earning_members: parseOptionalInt(data.earning_members),
       academic_achievements: data.academic_achievements,
       non_academic_achievements: data.non_academic_achievements,
       is_single_parent: data.is_single_parent === 'Yes' || data.is_single_parent === 'YES' || data.is_single_parent === true,
@@ -2398,12 +2410,12 @@ const fetchStudents = async () => {
           educationcategory: data.course,
           camp_name: data.campName,
           camp_date: data.campDate,
-          prev_percent: data.prev_percent,
-          present_percent: data.present_percent,
+          prev_percent: parseOptionalFloat(data.prev_percent),
+          present_percent: parseOptionalFloat(data.present_percent),
           has_scholarship: patchData.has_scholarship,
           scholarship: data.scholarship,
           does_work: patchData.does_work,
-          earning_members: data.earning_members,
+          earning_members: parseOptionalInt(data.earning_members),
           academic_achievements: data.academic_achievements,
           non_academic_achievements: data.non_academic_achievements,
           is_single_parent: patchData.is_single_parent,
