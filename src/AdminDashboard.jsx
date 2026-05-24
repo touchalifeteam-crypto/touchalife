@@ -2365,8 +2365,8 @@ const fetchStudents = async () => {
       address: data.address,
       school: data.school,
       class: data.year,
-      camp_name: data.campName,
-      camp_date: data.campDate,
+      camp_name: data.campName || null,
+      camp_date: data.campDate ? data.campDate.trim() || null : null,
       prev_percent: parseOptionalFloat(data.prev_percent),
       present_percent: parseOptionalFloat(data.present_percent),
       has_scholarship: data.has_scholarship === 'Yes' || data.has_scholarship === 'YES' || data.has_scholarship === true,
@@ -2408,8 +2408,8 @@ const fetchStudents = async () => {
           branch: data.college,
           class: data.year,
           educationcategory: data.course,
-          camp_name: data.campName,
-          camp_date: data.campDate,
+          camp_name: data.campName || null,
+          camp_date: data.campDate ? data.campDate.trim() || null : null,
           prev_percent: parseOptionalFloat(data.prev_percent),
           present_percent: parseOptionalFloat(data.present_percent),
           has_scholarship: patchData.has_scholarship,
@@ -5761,7 +5761,7 @@ const fetchStudents = async () => {
               <label>Class / Year<input name="year" defaultValue={editStudent.year || editStudent.class || ''} /></label>
               <label>Course<input name="course" defaultValue={editStudent.course || ''} placeholder="e.g. Science, Commerce" /></label>
               <label>Camp Name<input name="campName" defaultValue={editStudent.campName || editStudent.camp_name || ''} /></label>
-              <label>Camp Date<input name="campDate" defaultValue={editStudent.campDate || editStudent.camp_date || ''} placeholder="YYYY-MM-DD" /></label>
+              <label>Camp Date<input name="campDate" type="date" defaultValue={editStudent.campDate || editStudent.camp_date || ''} /></label>
               <label>Previous %<input name="prev_percent" defaultValue={editStudent.prev_percent || ''} /></label>
               <label>Present %<input name="present_percent" defaultValue={editStudent.present_percent || ''} /></label>
               <label>Has Scholarship
