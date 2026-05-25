@@ -2161,24 +2161,60 @@ const handleApprove = async (student) => {
 
 const handleMoveToEligible = async (student) => {
   try {
-    // ✅ Get current session for Supabase Edge Function auth
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
 
     // =====================================================
-    // 1️⃣ SEND ELIGIBILITY EMAIL
+    // 1️⃣ MOVE STUDENT FIRST
     // =====================================================
 
-    if (student.email) {
-      try {
+    const moveId = student.id;
+
+    const { data, error } = await supabase.rpc(
+      "move_to_eligible_from_non_eligible",
+      {
+        p_id: moveId,
+      }
+    );
+
+    if (error) {
+      console.error("RPC ERROR:", error);
+      alert(`❌ ${error.message}`);
+      return;
+    }
+
+    if (!data?.success) {
+      console.error("MOVE FAILED:", data);
+      alert(`❌ ${data?.message || "Failed to move student"}`);
+      return;
+    }
+
+    // =====================================================
+    // 2️⃣ REFRESH DATABASE DATA
+    // =====================================================
+
+    await fetchNonEligibleStudents();
+    await fetchEligibleStudents();
+    await fetchEligibleCount();
+
+    // =====================================================
+    // 3️⃣ SEND EMAIL AFTER SUCCESS
+    // =====================================================
+
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        console.error("No session token");
+      } else if (student.email) {
+
         const response = await fetch(
           "https://rmsmoqkfunrumebfjzah.supabase.co/functions/v1/send-eligibility-email",
           {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${session?.access_token}`,
+              Authorization: `Bearer ${session.access_token}`,
             },
             body: JSON.stringify({
               email: student.email,
@@ -2193,53 +2229,34 @@ const handleMoveToEligible = async (student) => {
 
         const result = await response.json();
 
+        console.log("EMAIL RESPONSE:", result);
+
         if (!response.ok) {
-          console.error("❌ Email error:", result);
-          alert("⚠️ Student moved but email failed to send");
-        } else {
-          console.log("✅ Email sent successfully");
+          console.error("Email failed:", result);
+
+          alert(
+            `⚠️ Student moved successfully but email failed`
+          );
+
+          return;
         }
-      } catch (mailErr) {
-        console.error("❌ Mail send failed:", mailErr);
+
+        console.log("✅ Email sent");
       }
+
+    } catch (mailErr) {
+      console.error("MAIL ERROR:", mailErr);
     }
 
     // =====================================================
-    // 2️⃣ MOVE TO ELIGIBLE TABLE
+    // 4️⃣ SUCCESS
     // =====================================================
 
-    const { error } = await supabase.rpc(
-      "move_to_eligible_from_non_eligible",
-      {
-        p_id: student.id,
-      }
-    );
-
-    if (error) {
-      console.error(error);
-      alert("❌ Failed: " + error.message);
-      return;
-    }
-
-    // =====================================================
-    // 3️⃣ UPDATE UI INSTANTLY
-    // =====================================================
-
-    setNonEligibleStudents((prev) =>
-      prev.filter((s) => s.id !== student.id)
-    );
-
-    setNonEligibleCount((prev) => prev - 1);
-
-    // Refresh eligible students
-    await fetchEligibleStudents();
-    await fetchEligibleCount();
-
-    alert("✅ Student moved to Eligible and email sent!");
+    alert("✅ Student moved to Eligible successfully");
 
   } catch (err) {
     console.error(err);
-    alert("❌ Error: " + err.message);
+    alert(`❌ ${err.message}`);
   }
 };
 
