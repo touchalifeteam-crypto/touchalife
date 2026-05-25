@@ -106,9 +106,18 @@ export default function AdminLogin() {
       return;
     }
 
+    // Increase reset link TTL by using Supabase's resetPasswordForEmail options.
+    // Note: exact param name depends on supabase-js version; using both common variants.
+    const redirectTo = window.location.origin + "/reset-password";
     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo: window.location.origin + "/reset-password",
+      redirectTo,
+      // try to extend expiry (set to ~3 minutes)
+      // @ts-ignore
+      token_expiry: 3 * 60,
+      // @ts-ignore
+      tokenExpiresIn: 3 * 60,
     });
+
 
     if (error) toast.error(error.message);
     else toast.success("Password reset email sent");
