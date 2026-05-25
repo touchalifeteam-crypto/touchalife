@@ -1703,6 +1703,8 @@ await fetchFeeTrackingRecords();
         .select('*')
         .order('created_at', { ascending: false });
 
+      console.log('[FETCH_NON_ELIGIBLE] Raw response:', { data, error });
+
       if (error) {
         console.error('[FETCH_NON_ELIGIBLE] ❌ Supabase error:', error);
         alert('⚠️ Error fetching non-eligible students: ' + error.message);
@@ -1717,6 +1719,8 @@ await fetchFeeTrackingRecords();
         setNonEligibleCount(0);
         return;
       }
+
+      console.log('[FETCH_NON_ELIGIBLE] Fetched', data.length, 'records. First record:', data[0]);
 
       // Transform data to match table format with robust field handling
       const transformedStudents = (data || []).map((student, index) => {
@@ -1795,9 +1799,18 @@ await fetchFeeTrackingRecords();
       });
 
       console.log('[FETCH_NON_ELIGIBLE] Transformed', transformedStudents.length, 'non-eligible students');
-      const studentsWithPublicIds = await attachStudentPublicIds(transformedStudents);
-      setNonEligibleStudents(studentsWithPublicIds);
-      setNonEligibleCount(studentsWithPublicIds?.length || 0);
+      setNonEligibleStudents(transformedStudents);
+      setNonEligibleCount(transformedStudents.length);
+
+      try {
+        const studentsWithPublicIds = await attachStudentPublicIds(transformedStudents);
+        if (Array.isArray(studentsWithPublicIds) && studentsWithPublicIds.length > 0) {
+          setNonEligibleStudents(studentsWithPublicIds);
+          setNonEligibleCount(studentsWithPublicIds.length);
+        }
+      } catch (attachError) {
+        console.warn('[FETCH_NON_ELIGIBLE] attachStudentPublicIds failed, showing raw records:', attachError);
+      }
     } catch (err) {
       console.error('[FETCH_NON_ELIGIBLE] Unexpected error:', err);
     } finally {
