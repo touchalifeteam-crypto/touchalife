@@ -52,14 +52,12 @@ export default function AdminLogin() {
 
 if (error) {
   toast.error(error.message);
-  setLoading(false);
   return;
 }
 
 if (data.user?.user_metadata?.user_type !== "admin") {
   toast.error("Only admins can login");
   await supabase.auth.signOut();
-  setLoading(false);
   return;
 }
 
