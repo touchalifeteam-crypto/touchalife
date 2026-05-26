@@ -18,7 +18,9 @@ export default function ResetPassword() {
       toast.error(error.message);
     } else {
       toast.success("Password updated successfully");
-      navigate("/");
+     setTimeout(() => {
+  navigate("/adminlogin");
+}, 1500); 
     }
   };
 
