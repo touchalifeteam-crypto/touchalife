@@ -44,22 +44,28 @@ export default function AdminLogin() {
     try {
       if (isSignIn) {
         // Custom admin login - check against admins table
-        const enteredEmail = email.trim().toLowerCase();
-        const enteredPassword = password.trim();
-        
-        if (enteredEmail !== 'info@touchalifeorg.com' || enteredPassword !== 'Admin@2014') {
-          if (enteredEmail !== 'info@touchalifeorg.com') {
-            console.log('only admins can login');
-          } else {
-            console.log('wrong credentials/password');
-          }
-          toast.error('Wrong credentials');
-          return;
-        }
+      
+        const { data, error } = await supabase.auth.signInWithPassword({
+  email: email.trim(),
+  password: password.trim(),
+});
 
-        localStorage.setItem('admin_token', enteredEmail);
-        toast.success('Admin login successful');
-        navigate('/admin-dashboard');
+if (error) {
+  toast.error(error.message);
+  return;
+}
+
+if (data.user?.user_metadata?.user_type !== "admin") {
+  toast.error("Only admins can login");
+  await supabase.auth.signOut();
+  return;
+}
+
+localStorage.setItem('admin_token', data.user.email);
+
+toast.success('Admin login successful');
+
+navigate('/admin-dashboard');
       } else {
         // Original Supabase sign up for admins
         const { error } = await supabase.auth.signUp({
@@ -100,29 +106,32 @@ export default function AdminLogin() {
   const nameErrorMsg = showErrors && !isSignIn ? (name.trim() === '' ? 'Full name required' : '') : '';
   const passwordErrorMsgs = showErrors ? validatePassword(password) : [];
 
-  const handleForgotPassword = async () => {
-    if (!email.trim()) {
-      toast.error("Enter your email first");
+  
+ const handleForgotPassword = async () => {
+  if (!email.trim()) {
+    toast.error("Enter your email first");
+    return;
+  }
+
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      email.trim(),
+      {
+       redirectTo: `${window.location.origin}/reset-password`,
+      }
+    );
+
+    if (error) {
+      toast.error(error.message);
       return;
     }
 
-    // Increase reset link TTL by using Supabase's resetPasswordForEmail options.
-    // Note: exact param name depends on supabase-js version; using both common variants.
-    const redirectTo = window.location.origin + "/reset-password";
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-      redirectTo,
-      // try to extend expiry (set to ~3 minutes)
-      // @ts-ignore
-      token_expiry: 3 * 60,
-      // @ts-ignore
-      tokenExpiresIn: 3 * 60,
-    });
-
-
-    if (error) toast.error(error.message);
-    else toast.success("Password reset email sent");
-  };
-
+    toast.success("Password reset email sent successfully");
+  } catch (err) {
+    toast.error("Something went wrong");
+    console.log(err);
+  }
+};
   return (
     <div className="auth-container">
       <div className="auth-box">
