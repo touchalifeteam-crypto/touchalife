@@ -56,14 +56,17 @@ if (error) {
   return;
 }
 
-if (data.user?.user_metadata?.user_type !== "admin") {
+// IMPORTANT: Supabase session user_metadata may not always include user_type.
+// Do NOT block login based on user_metadata.user_type or you'll signOut and bounce back to cover page.
+if (data.user?.user_metadata?.user_type && data.user.user_metadata.user_type !== "admin") {
   toast.error("Only admins can login");
   await supabase.auth.signOut();
   setLoading(false);
   return;
 }
 
-localStorage.setItem('admin_token', data.user.email);
+// Preserve existing behavior (token storage)
+localStorage.setItem('admin_token', data.user?.email ?? email.trim());
 
 toast.success('Admin login successful');
 

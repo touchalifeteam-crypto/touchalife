@@ -29,24 +29,13 @@ function App() {
           <Route path="/" element={<CoverPage />} />
 
           {/* 🔒 Protected Routes (cannot open by URL) */}
-          <Route
-            path="/login"
-            element={
-              <ProtectedRoute>
-                <LoginProfiles />
-              </ProtectedRoute>
-            }
-          />
+          {/* Public: role selection + login pages must be accessible without auth */}
+          <Route path="/login" element={<LoginProfiles />} />
           <Route path="/set-password" element={<SetPassword />} />
-          <Route
-            path="/volunteerlogin"
-            element={
-              <ProtectedRoute>
-                <VolunteerLogin />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/volunteerlogin" element={<VolunteerLogin />} />
 
+
+          {/* Protected dashboards */}
           <Route
             path="/volunteer-dashboard"
             element={
@@ -56,27 +45,24 @@ function App() {
             }
           />
 
+          <Route path="/student-login" element={<StudentLogin />} />
+
+
           <Route
-            path="/student-login"
+            path="/student-dashboard"
             element={
               <ProtectedRoute>
-                <StudentLogin />
+                <StudentProvider>
+                  <StudentDashboard />
+                </StudentProvider>
               </ProtectedRoute>
             }
           />
-
-          {/* Student Dashboard - No protection needed after login */}
-          <Route path="/student-dashboard" element={<StudentProvider><StudentDashboard /></StudentProvider>} />
           <Route path="/test-notifications" element={<TestNotifications />} />
 
-          <Route
-            path="/donorlogin"
-            element={
-              <ProtectedRoute>
-                <DonorLogin />
-              </ProtectedRoute>
-            }
-          />
+
+          <Route path="/donorlogin" element={<DonorLogin />} />
+
 
           <Route
             path="/donor-dashboard"
@@ -87,14 +73,7 @@ function App() {
             }
           />
 
-          <Route
-            path="/adminlogin"
-            element={
-              <ProtectedRoute>
-                <Adminlogin />
-              </ProtectedRoute>
-            }
-          />
+          <Route path="/adminlogin" element={<Adminlogin />} />
 
           <Route
             path="/admin-dashboard"
@@ -104,6 +83,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
 
           <Route
             path="/studentform"
