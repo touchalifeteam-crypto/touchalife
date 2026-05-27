@@ -26,13 +26,85 @@ export default function AdminLogin() {
     checkSession();
   }, [navigate]);
 
+  const validatePassword = (value) => {
+    const errors = [];
+    if (!/[a-z]/.test(value)) errors.push("Lowercase letter required");
+    if (!/[A-Z]/.test(value)) errors.push("Uppercase letter required");
+    if (!/[0-9]/.test(value)) errors.push("Number required");
+    if (!/[@$!%*?&]/.test(value)) errors.push("Special character required");
+    if (value.length < 8) errors.push("Minimum 8 characters");
+    return errors;
+  };
+
+  const emailErrorMsg = showErrors
+    ? email.trim() === "" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+      ? "Email is required/invalid"
+      : ""
+    : "";
+
+  const nameErrorMsg = showErrors && !isSignIn && name.trim() === "" ? "Full name required" : "";
+
+  const passwordErrorMsgs = showErrors ? validatePassword(password) : [];
+
+  const handleForgotPassword = async () => {
+    if (!email.trim()) {
+      toast.error("Enter your email first");
+      return;
+    }
+
+    // Prevent duplicate API calls from fast clicks
+    if (loading) return;
+
+    try {
+      setLoading(true);
+
+      console.log("AdminLogin: resetPasswordForEmail sending...");
+
+      // Supabase reset call should resolve quickly, but guard with a timeout to prevent UI hanging.
+      const resetCall = supabase.auth.resetPasswordForEmail(email.trim(), {
+        // IMPORTANT: redirectTo must be an exact allowed URL in Supabase Auth settings.
+        // Your Supabase allowlist includes the query-param version, so include it.
+        // IMPORTANT: Must match Supabase allowlisted Redirect URL EXACTLY.
+        // Keep query-param version because it is present in Supabase allowlist.
+        redirectTo: `${window.location.origin}/reset-password?role=admin`,
+      });
+
+      const timeoutMs = 20000;
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error(`resetPasswordForEmail timed out after ${timeoutMs}ms`)), timeoutMs)
+      );
+
+      const { data, error } = await Promise.race([resetCall, timeoutPromise]);
+
+      console.log("AdminLogin resetPasswordForEmail result:", { data, error });
+
+      if (error) {
+        toast.error(error?.message || "Failed to send reset email");
+        return;
+      }
+
+      // Success toast (Supabase handles email delivery asynchronously)
+      toast.success("Password reset email sent successfully", { autoClose: 2000 });
+    } catch (err) {
+      toast.error(err?.message || "Something went wrong while sending reset email");
+      console.log("AdminLogin reset error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setShowErrors(true);
     setLoading(true);
 
-    const emailError = email.trim() === '' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ? 'Email is required/invalid' : '';
-    const nameError = !isSignIn && name.trim() === '' ? 'Full name required' : '';
+    const emailError =
+      email.trim() === "" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+        ? "Email is required/invalid"
+        : "";
+
+    const nameError = !isSignIn && name.trim() === "" ? "Full name required" : "";
+
     const pwdErrors = validatePassword(password);
 
     if (emailError || nameError || pwdErrors.length > 0) {
@@ -43,36 +115,30 @@ export default function AdminLogin() {
 
     try {
       if (isSignIn) {
-        // Custom admin login - check against admins table
-      
         const { data, error } = await supabase.auth.signInWithPassword({
-  email: email.trim(),
-  password: password.trim(),
-});
+          email: email.trim(),
+          password: password.trim(),
+        });
 
-if (error) {
-  toast.error(error.message);
-  setLoading(false);
-  return;
-}
+        if (error) {
+          toast.error(error.message);
+          setLoading(false);
+          return;
+        }
 
-// IMPORTANT: Supabase session user_metadata may not always include user_type.
-// Do NOT block login based on user_metadata.user_type or you'll signOut and bounce back to cover page.
-if (data.user?.user_metadata?.user_type && data.user.user_metadata.user_type !== "admin") {
-  toast.error("Only admins can login");
-  await supabase.auth.signOut();
-  setLoading(false);
-  return;
-}
+        // IMPORTANT: user_metadata may not always include user_type.
+        // Do NOT block login based on user_type when it's missing.
+        if (data.user?.user_metadata?.user_type && data.user.user_metadata.user_type !== "admin") {
+          toast.error("Only admins can login");
+          await supabase.auth.signOut();
+          setLoading(false);
+          return;
+        }
 
-// Preserve existing behavior (token storage)
-localStorage.setItem('admin_token', data.user?.email ?? email.trim());
-
-toast.success('Admin login successful');
-
-navigate('/admin-dashboard');
+        localStorage.setItem("admin_token", data.user?.email ?? email.trim());
+        toast.success("Admin login successful");
+        navigate("/admin-dashboard");
       } else {
-        // Original Supabase sign up for admins
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
           password: password.trim(),
@@ -80,6 +146,7 @@ navigate('/admin-dashboard');
             data: { name: name.trim(), user_type: "admin" },
           },
         });
+
         if (error) throw error;
 
         toast.success("Admin account created");
@@ -96,47 +163,6 @@ navigate('/admin-dashboard');
     }
   };
 
-  const validatePassword = (value) => {
-    const errors = [];
-    if (!/[a-z]/.test(value)) errors.push("Lowercase letter required");
-    if (!/[A-Z]/.test(value)) errors.push("Uppercase letter required");
-    if (!/[0-9]/.test(value)) errors.push("Number required");
-    if (!/[@$!%*?&]/.test(value)) errors.push("Special character required");
-    if (value.length < 8) errors.push("Minimum 8 characters");
-    return errors;
-  };
-
-  // Errors shown ONLY after submit click
-  const emailErrorMsg = showErrors ? (email.trim() === '' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) ? 'Email is required/invalid' : '') : '';
-  const nameErrorMsg = showErrors && !isSignIn ? (name.trim() === '' ? 'Full name required' : '') : '';
-  const passwordErrorMsgs = showErrors ? validatePassword(password) : [];
-
-  
- const handleForgotPassword = async () => {
-  if (!email.trim()) {
-    toast.error("Enter your email first");
-    return;
-  }
-
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(
-      email.trim(),
-      {
-       redirectTo: `${window.location.origin}/reset-password`,
-      }
-    );
-
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    toast.success("Password reset email sent successfully");
-  } catch (err) {
-    toast.error("Something went wrong");
-    console.log(err);
-  }
-};
   return (
     <div className="auth-container">
       <div className="auth-box">
@@ -196,18 +222,24 @@ navigate('/admin-dashboard');
             <div className="password-requirements" aria-live="polite">
               <p className="password-requirements-title">Password must include</p>
               <ul className="password-requirements-list">
-                {passwordErrorMsgs.map((err, i) => <li key={i}>{err}</li>)}
+                {passwordErrorMsgs.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
               </ul>
             </div>
           )}
 
           <button type="submit" disabled={loading}>
-            {loading ? "Loading..." : (isSignIn ? "Sign In" : "Sign Up")}
+            {loading ? "Loading..." : isSignIn ? "Sign In" : "Sign Up"}
           </button>
         </form>
 
         {isSignIn && (
-          <p className="forgot-password" onClick={handleForgotPassword} style={{ cursor: "pointer", textAlign: "center", marginTop: "10px", color: "#666" }}>
+          <p
+            className="forgot-password"
+            onClick={handleForgotPassword}
+            style={{ cursor: "pointer", textAlign: "center", marginTop: "10px", color: "#666" }}
+          >
             Forgot password?
           </p>
         )}
